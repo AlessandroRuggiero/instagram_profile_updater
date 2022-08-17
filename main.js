@@ -1,8 +1,10 @@
 const { IgApiClient } = require("instagram-private-api")
+var crypto = require('crypto');
+var readlineSync = require('readline-sync');
+
 ig = new IgApiClient()
 
-const USERNAME = ""
-const PASSWORD = ""
+const USERNAME = process.env.I_USERNAME
 const my_birth = new Date (2003, 5, 9, 23, 23, 0, 0)
 
 ig.state.generateDevice(USERNAME)
@@ -40,10 +42,21 @@ function get_bio () {
     return forHumans (delta) + " old"
 }
 
+function decrypt (text,password){
+    const algorithm = 'aes256'; 
+    var decipher = crypto.createDecipher(algorithm, password);
+    var decrypted = decipher.update(text, 'hex', 'utf8') + decipher.final('utf8');
+    return decrypted
+}
+
+function get_password () {
+    var pass = readlineSync.question("Password: ");
+    return decrypt(process.env.I_PASSWORD,pass);
+}
 
 const main = async () => {
     await ig.simulate.preLoginFlow()
-    await ig.account.login(USERNAME, PASSWORD)
+    await ig.account.login(USERNAME, get_password())
 
     while (true)  {
         await sleep (30);
