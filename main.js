@@ -50,7 +50,7 @@ function decrypt (text,password){
 }
 
 function get_password () {
-    var pass = readlineSync.question("Password: ");
+    var pass = readlineSync.questionNewPassword("Password: ");
     return decrypt(process.env.I_PASSWORD,pass);
 }
 
@@ -66,7 +66,7 @@ const main = async () => {
 }
 
 
-main().catch((res) => console.log("wowowoowowowowowoo caugth error, " + res))
+main().catch((res) => console.log("wowow caught error, " + res))
 
 
 

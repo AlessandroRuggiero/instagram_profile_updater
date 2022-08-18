@@ -1,1 +1,2 @@
-node --no-deprecation main.js
+echo "" > logs.log
+node --no-deprecation main.js | tee logs.log
