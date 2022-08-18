@@ -55,12 +55,14 @@ function get_password () {
 }
 
 const main = async () => {
-    await ig.simulate.preLoginFlow()
-    await ig.account.login(USERNAME, get_password())
+    const PASSWORD = get_password();
+    await ig.simulate.preLoginFlow().catch((err) => console.log (`Error in preLoginFlow, should not be a problem --> (${err})`));
+    await ig.account.login(USERNAME,PASSWORD);
+    delete PASSWORD;
 
     while (true)  {
         await sleep (30);
-        await ig.account.setBiography(get_bio())
+        await ig.account.setBiography(get_bio());
         await sleep(30);
     }
 }
