@@ -1,35 +1,54 @@
-const { IgApiClient } = require("instagram-private-api")
-var crypto = require('crypto');
-var readlineSync = require('readline-sync');
+const { IgApiClient } = require('instagram-private-api');
+const { sample } = require('lodash');
+require('dotenv').config();
 
-ig = new IgApiClient()
+const USERNAME = process.env.IG_USERNAME;
+const PASSWORD = process.env.IG_PASSWORD;
+const sleepTime = process.env.SLEEP_TIME || 60*5;
+const date = Date.parse(process.env.MY_BIRTH); //like 2023-01-10T23:23:00.000Z
+const my_birth = new Date(date);
 
-const USERNAME = process.env.I_USERNAME
-const my_birth = new Date (2003, 5, 9, 23, 23, 0, 0)
+console.log('Username: ', USERNAME);
+console.log("Birth: ", my_birth);
 
-ig.state.generateDevice(USERNAME)
 
-/**
- * Translates seconds into human readable format of seconds, minutes, hours, days, and years
- * 
- * @param  {number} seconds The number of seconds to be processed
- * @return {string}         The phrase describing the amount of time
- */
- function forHumans ( seconds ) {
-    var levels = [
-        [Math.floor(seconds / 31536000), 'years'],
-        [Math.floor((seconds % 31536000) / 86400), 'days'],
-        [Math.floor(((seconds % 31536000) % 86400) / 3600), 'hours'],
-        [Math.floor((((seconds % 31536000) % 86400) % 3600) / 60), 'minutes'],
-        [(((seconds % 31536000) % 86400) % 3600) % 60, 'seconds'],
-    ];
-    var returntext = '';
+function calculateAge(birthDate) {
+    const now = new Date();
+    
+    let years = now.getFullYear() - birthDate.getFullYear();
+    let months = now.getMonth() - birthDate.getMonth();
+    let days = now.getDate() - birthDate.getDate();
+    let hours = now.getHours() - birthDate.getHours();
+    let minutes = now.getMinutes() - birthDate.getMinutes();
+    let seconds = now.getSeconds() - birthDate.getSeconds();
+    
+    if (seconds < 0) {
+        seconds += 60;
+        minutes--;
+    }
+    if (minutes < 0) {
+        minutes += 60;
+        hours--;
+    }
+    if (hours < 0) {
+        hours += 24;
+        days--;
+    }
+    if (days < 0) {
+        const lastMonth = new Date(now.getFullYear(), now.getMonth(), 0);
+        days += lastMonth.getDate();
+        months--;
+    }
+    if (months < 0) {
+        months += 12;
+        years--;
+    }
 
-    for (var i = 0, max = levels.length; i < max; i++) {
-        if ( levels[i][0] === 0 ) continue;
-        returntext += ' ' + levels[i][0] + ' ' + (levels[i][0] === 1 ? levels[i][1].substr(0, levels[i][1].length-1): levels[i][1]);
-    };
-    return returntext.trim();
+    return `${years} years ${months} months ${days} days ${hours} hours ${minutes} minutes ${seconds} seconds old`;
+}
+
+if (!USERNAME || !PASSWORD) {
+  throw new Error('Please specify IG_USERNAME and IG_PASSWORD in .env file');
 }
 
 function sleep(seconds) {
@@ -37,49 +56,26 @@ function sleep(seconds) {
 }
 
 function get_bio () {
-    const now = new Date ()
-    const delta = Math.floor((now-my_birth)/1000)
-    return forHumans (delta) + " old"
+    const now = new Date ();
+    return calculateAge(my_birth);
 }
 
-function decrypt (text,password){
-    const algorithm = 'aes256'; 
-    var decipher = crypto.createDecipher(algorithm, password);
-    var decrypted = decipher.update(text, 'hex', 'utf8') + decipher.final('utf8');
-    return decrypted
+const ig = new IgApiClient();
+ig.state.generateDevice(USERNAME);
+(async () => {
+  await ig.simulate.preLoginFlow();
+  const loggedInUser = await ig.account.login(USERNAME, PASSWORD).catch(err => {
+    console.log('Error logging in: ', err);
+  });
+  console.log(loggedInUser);
+  const userFeed = ig.feed.user(loggedInUser.pk);
+  console.log(userFeed);
+
+while (true){
+  await ig.account.setBiography(get_bio()).then((response) => {
+    console.log(response);
+  });
+  await sleep(sleepTime);
+    
 }
-
-function get_password () {
-    var pass = readlineSync.questionNewPassword("Password: ");
-    return decrypt(process.env.I_PASSWORD,pass);
-}
-
-const main = async () => {
-    const PASSWORD = get_password();
-    await ig.simulate.preLoginFlow().catch((err) => console.log (`Error in preLoginFlow, should not be a problem --> (${err})`));
-    await ig.account.login(USERNAME,PASSWORD);
-    delete PASSWORD;
-
-    while (true)  {
-        await sleep (30);
-        await ig.account.setBiography(get_bio());
-        await sleep(30);
-    }
-}
-
-
-main().catch((res) => console.log("wowow caught error, " + res))
-
-
-
-// useless 
-    // log out of Instagram when done
-    // process.nextTick(async () => {
-    //     try {
-    //         await ig.simulate.postLoginFlow()
-    //     }catch (e) {    
-    //         console.log ("oh oh")
-    //         console.error(e);
-    //     }
-        
-    // })
+})();
