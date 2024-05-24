@@ -5,8 +5,11 @@ require('dotenv').config();
 const USERNAME = process.env.IG_USERNAME;
 const PASSWORD = process.env.IG_PASSWORD;
 const sleepTime = process.env.SLEEP_TIME || 60*5;
-const my_birth = Date.parse(process.env.MY_BIRTH); //like 2023-01-10T23:23:00.000Z
+const date = Date.parse(process.env.MY_BIRTH); //like 2023-01-10T23:23:00.000Z
+const my_birth = new Date(date);
 
+console.log('Username: ', USERNAME);
+console.log("Birth: ", my_birth);
 
 
 function calculateAge(birthDate) {
