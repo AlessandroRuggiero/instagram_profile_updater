@@ -4,8 +4,10 @@ require('dotenv').config();
 
 const USERNAME = process.env.IG_USERNAME;
 const PASSWORD = process.env.IG_PASSWORD;
+const sleepTime = process.env.SLEEP_TIME || 60*5;
+const my_birth = Date.parse(process.env.MY_BIRTH); //like 2023-01-10T23:23:00.000Z
 
-const my_birth = new Date (2003, 4, 9, 23, 23, 0, 0)
+
 
 function calculateAge(birthDate) {
     const now = new Date();
@@ -79,7 +81,7 @@ while (true){
   await ig.account.setBiography(get_bio()).then((response) => {
     console.log(response);
   });
-  await sleep(60*5);
+  await sleep(sleepTime);
     
 }
 //   await ig.media.like({
