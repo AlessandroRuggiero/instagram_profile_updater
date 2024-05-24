@@ -1,8 +1,6 @@
 {
   "dependencies": {
-    "crypto": "^1.0.1",
-    "crypto-js": "^4.1.1",
-    "instagram-private-api": "^1.45.3",
-    "readline-sync": "^1.4.10"
+    "dotenv": "^16.4.5",
+    "instagram-private-api": "^1.46.1"
   }
 }
