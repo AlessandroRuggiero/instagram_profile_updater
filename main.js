@@ -72,6 +72,7 @@ ig.state.generateDevice(USERNAME);
   console.log(userFeed);
 
 while (true){
+  console.log('Updating bio');
   await ig.account.setBiography(get_bio()).then((response) => {
     console.log(response);
   });
