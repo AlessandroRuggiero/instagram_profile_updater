@@ -56,7 +56,6 @@ function sleep(seconds) {
 }
 
 function get_bio () {
-    const now = new Date ();
     return calculateAge(my_birth);
 }
 
